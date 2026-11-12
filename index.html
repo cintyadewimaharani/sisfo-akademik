@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>202453021_SISFO AKADEMIK</title>
+<style>
+:root{--bg:#f3f6f4;--sf:#fff;--tx:#17231d;--mu:#5d6b63;--ac:#1f6f50;--ac2:#e3f1ea;--bd:#d3ddd7;--er:#b3261e;--ok:#1f6f50;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101814;--sf:#18221c;--tx:#e6efe9;--mu:#9bb0a4;--mu:#9bb0a4;--ac:#5fc79a;--ac2:#1e3a2d;--bd:#2c3b32;--er:#ff8a80;--ok:#5fc79a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101814;--sf:#18221c;--tx:#e6efe9;--mu:#9bb0a4;--ac:#5fc79a;--ac2:#1e3a2d;--bd:#2c3b32;--er:#ff8a80;--ok:#5fc79a;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+h1,h2{font-family:Georgia,"Times New Roman",serif;margin:0}
+.wrap{max-width:960px;margin:0 auto;padding:16px}
+.login{max-width:360px;margin:12vh auto;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:24px}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px}
+nav button{background:transparent;border:1px solid var(--bd);color:var(--tx);padding:8px 14px;border-radius:6px;cursor:pointer;font:inherit}
+nav button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:16px}
+label{display:block;font-weight:600;margin:10px 0 4px}
+input,select{width:100%;padding:9px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.btn{background:var(--ac);color:#fff;border:0;padding:9px 16px;border-radius:6px;cursor:pointer;font:inherit;margin-top:12px}
+.btn.s{background:transparent;color:var(--tx);border:1px solid var(--bd);margin:0;padding:5px 10px}
+.btn.d{background:transparent;color:var(--er);border:1px solid var(--er);margin:0;padding:5px 10px}
+.msg{margin-top:10px;padding:9px 12px;border-radius:6px;display:none}
+.msg.er{display:block;background:color-mix(in srgb,var(--er) 15%,transparent);color:var(--er)}
+.msg.ok{display:block;background:var(--ac2);color:var(--ok)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bd);white-space:nowrap}
+td.ac{display:flex;gap:6px}
+.emp{color:var(--mu);padding:12px 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+var KEY="akademik_demo_v1";
+var D={mhs:[],dsn:[],mk:[],pg:[],nilai:[]};
+function load(){try{var r=localStorage.getItem(KEY);if(r)D=JSON.parse(r)}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}}
+load();
+var login=false,tab="mhs",edit=null,q="",msg=null;
+try{login=sessionStorage.getItem("li")==="1"}catch(e){}
+var app=document.getElementById("app");
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function $(i){return document.getElementById(i)}
+function v(i){return $(i).value.trim()}
+function say(t,ok){msg={t:t,ok:ok};render()}
+function draw(){
+ if(!login){
+  app.innerHTML='<div class="login"><h1>Masuk</h1><p style="color:var(--mu)">Sistem Informasi Akademik</p><label for="u">Username</label><input id="u" autocomplete="off"><label for="p">Password</label><input id="p" type="password"><button class="btn" id="go">Masuk</button><div class="msg'+(msg?(msg.ok?" ok":" er"):"")+'">'+(msg?esc(msg.t):"")+'</div></div>';
+  $("go").onclick=function(){
+   var u=v("u"),p=$("p").value;
+   if(!u||!p){return say("Username dan password wajib diisi.",0)}
+   if(u==="admin"&&p==="admin123"){login=true;try{sessionStorage.setItem("li","1")}catch(e){}msg=null;render()}
+   else say("Username atau password salah.",0)};
+  return}
+ var names={mhs:"Mahasiswa",dsn:"Dosen",mk:"Mata kuliah",nilai:"Nilai"};
+ var h='<div class="wrap"><header><h2>Sistem Informasi Akademik</h2><button class="btn s" id="out">Keluar</button></header><nav>';
+ for(var k in names)h+='<button class="'+(tab===k?"on":"")+'" data-t="'+k+'">'+names[k]+'</button>';
+ h+='</nav>'+form()+list()+'</div>';
+ app.innerHTML=h;
+ $("out").onclick=function(){login=false;try{sessionStorage.removeItem("li")}catch(e){}msg=null;render()};
+ var bs=document.querySelectorAll("nav button");
+ for(var i=0;i<bs.length;i++)bs[i].onclick=function(){tab=this.getAttribute("data-t");edit=null;q="";msg=null;render()};
+ bind()}
+function render(){draw()}
+function box(){return '<div class="msg'+(msg?(msg.ok?" ok":" er"):"")+'">'+(msg?esc(msg.t):"")+'</div>'}
+function opt(a,idf,lab,sel){var s='<option value="">Pilih</option>';a.forEach(function(x){s+='<option value="'+esc(x[idf])+'"'+(sel===x[idf]?" selected":"")+'>'+esc(x[lab])+'</option>'});return s}
+function form(){
+ var e=edit,h='<div class="card"><h2>'+(e?"Ubah ":"Tambah ")+{mhs:"mahasiswa",dsn:"dosen",mk:"mata kuliah",nilai:"nilai"}[tab]+'</h2>';
+ if(tab==="mhs")h+='<div class="row"><div><label for="f1">NIM</label><input id="f1" value="'+(e?esc(e.nim):"")+'"></div><div><label for="f2">Nama</label><input id="f2" value="'+(e?esc(e.nama):"")+'"></div><div><label for="f3">Program studi</label><input id="f3" value="'+(e?esc(e.prodi):"")+'"></div><div><label for="f4">Angkatan</label><input id="f4" value="'+(e?esc(e.angkatan):"")+'"></div></div>';
+ if(tab==="dsn")h+='<div class="row"><div><label for="f1">NIDN</label><input id="f1" value="'+(e?esc(e.nidn):"")+'"></div><div><label for="f2">Nama dosen</label><input id="f2" value="'+(e?esc(e.nama):"")+'"></div><div><label for="f3">Email</label><input id="f3" value="'+(e?esc(e.email):"")+'"></div></div>';
+ if(tab==="mk")h+='<div class="row"><div><label for="f1">Kode</label><input id="f1" value="'+(e?esc(e.kode):"")+'"></div><div><label for="f2">Nama mata kuliah</label><input id="f2" value="'+(e?esc(e.nama):"")+'"></div><div><label for="f3">SKS</label><input id="f3" value="'+(e?esc(e.sks):"")+'"></div><div><label for="f4">Dosen pengampu</label><select id="f4">'+opt(D.dsn,"nidn","nama","")+'</select></div></div>';
+ if(tab==="nilai")h+='<div class="row"><div><label for="f1">Mahasiswa</label><select id="f1">'+opt(D.mhs,"nim","nama",e?e.nim:"")+'</select></div><div><label for="f2">Mata kuliah</label><select id="f2">'+opt(D.mk,"kode","nama",e?e.kode:"")+'</select></div><div><label for="f3">Nilai (0-100)</label><input id="f3" value="'+(e?esc(e.nilai):"")+'"></div></div>';
+ return h+'<button class="btn" id="sv">Simpan</button>'+(e?' <button class="btn s" id="cn">Batal</button>':"")+box()+'</div>'}
+function list(){
+ var h='<div class="card"><h2>Daftar</h2>';
+ if(tab==="mhs")h+='<label for="sr">Cari nama atau NIM</label><input id="sr" value="'+esc(q)+'">';
+ var rows=[],hd=[];
+ if(tab==="mhs"){hd=["NIM","Nama","Prodi","Angkatan"];D.mhs.forEach(function(x,i){if(!q||(x.nim+x.nama).toLowerCase().indexOf(q.toLowerCase())>-1)rows.push([i,x.nim,x.nama,x.prodi,x.angkatan])})}
+ if(tab==="dsn"){hd=["NIDN","Nama","Email"];D.dsn.forEach(function(x,i){rows.push([i,x.nidn,x.nama,x.email])})}
+ if(tab==="mk"){hd=["Kode","Nama","SKS","Pengampu"];D.mk.forEach(function(x,i){var p=D.pg.filter(function(g){return g.kode===x.kode}).map(function(g){var d=D.dsn.filter(function(z){return z.nidn===g.nidn})[0];return d?d.nama:g.nidn}).join(", ");rows.push([i,x.kode,x.nama,x.sks,p||"-"])})}
+ if(tab==="nilai"){hd=["NIM","Mata kuliah","Nilai"];D.nilai.forEach(function(x,i){rows.push([i,x.nim,x.kode,x.nilai])})}
+ if(!rows.length)return h+'<div class="emp">Belum ada data. Isi formulir di atas lalu klik Simpan.</div></div>';
+ h+='<div class="tw"><table><thead><tr>'+hd.map(function(t){return"<th>"+t+"</th>"}).join("")+'<th>Aksi</th></tr></thead><tbody>';
+ rows.forEach(function(r){h+="<tr>"+r.slice(1).map(function(c){return"<td>"+esc(c)+"</td>"}).join("")+'<td class="ac"><button class="btn s" data-e="'+r[0]+'">Ubah</button><button class="btn d" data-d="'+r[0]+'">Hapus</button></td></tr>'});
+ return h+"</tbody></table></div></div>"}
+function bind(){
+ var sv=$("sv");if(sv)sv.onclick=doSave;
+ var cn=$("cn");if(cn)cn.onclick=function(){edit=null;msg=null;render()};
+ var sr=$("sr");if(sr)sr.oninput=function(){q=this.value;var p=this.selectionStart;render();var n=$("sr");n.focus();n.setSelectionRange(p,p)};
+ var es=document.querySelectorAll("[data-e]"),ds=document.querySelectorAll("[data-d]");
+ for(var i=0;i<es.length;i++)es[i].onclick=function(){edit=D[tab==="nilai"?"nilai":tab][+this.getAttribute("data-e")];edit._i=+this.getAttribute("data-e");msg=null;render()};
+ for(var j=0;j<ds.length;j++)ds[j].onclick=function(){del(+this.getAttribute("data-d"))}}
+function doSave(){
+ var a=v("f1"),b=v("f2"),c=$("f3")?v("f3"):"",d=$("f4")?v("f4"):"",ei=edit?edit._i:-1;
+ if(tab==="mhs"){
+  if(!a)return say("NIM wajib diisi.",0);
+  if(!/^[0-9]+$/.test(a))return say("NIM hanya boleh berisi angka.",0);
+  if(!b)return say("Nama wajib diisi.",0);
+  if(D.mhs.some(function(x,i){return x.nim===a&&i!==ei}))return say("NIM sudah terdaftar.",0);
+  var o={nim:a,nama:b,prodi:c,angkatan:d};ei>-1?D.mhs[ei]=o:D.mhs.push(o)}
+ if(tab==="dsn"){
+  if(!a)return say("NIDN wajib diisi.",0);
+  if(!b)return say("Nama dosen wajib diisi.",0);
+  if(c&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c))return say("Format email tidak valid.",0);
+  if(D.dsn.some(function(x,i){return x.nidn===a&&i!==ei}))return say("NIDN sudah terdaftar.",0);
+  var o={nidn:a,nama:b,email:c};ei>-1?D.dsn[ei]=o:D.dsn.push(o)}
+ if(tab==="mk"){
+  if(!a||!b)return say("Kode dan nama mata kuliah wajib diisi.",0);
+  if(!/^[0-9]+$/.test(c)||+c<1)return say("SKS harus berupa angka lebih dari 0.",0);
+  if(D.mk.some(function(x,i){return x.kode===a&&i!==ei}))return say("Kode mata kuliah sudah ada.",0);
+  var o={kode:a,nama:b,sks:c};ei>-1?D.mk[ei]=o:D.mk.push(o);
+  if(d){if(D.pg.some(function(g){return g.kode===a&&g.nidn===d}))return say("Dosen pengampu sudah ditetapkan pada mata kuliah ini.",0);D.pg.push({kode:a,nidn:d})}}
+ if(tab==="nilai"){
+  if(!a||!b)return say("Mahasiswa dan mata kuliah wajib dipilih.",0);
+  if(!c)return say("Nilai wajib diisi.",0);
+  if(!/^[0-9]+(\.[0-9]+)?$/.test(c))return say("Nilai harus berupa angka.",0);
+  if(+c>100)return say("Nilai harus di antara 0 dan 100.",0);
+  var o={nim:a,kode:b,nilai:c};ei>-1?D.nilai[ei]=o:D.nilai.push(o)}
+ save();edit=null;say("Data berhasil disimpan.",1)}
+function del(i){
+ if(!confirm("Hapus data ini?"))return;
+ var x=D[tab][i];
+ if(tab==="mhs"&&D.nilai.some(function(n){return n.nim===x.nim}))return say("Mahasiswa tidak bisa dihapus karena sudah punya nilai.",0);
+ if(tab==="mk"&&D.nilai.some(function(n){return n.kode===x.kode}))return say("Mata kuliah tidak bisa dihapus karena sudah dipakai pada data nilai.",0);
+ if(tab==="mk")D.pg=D.pg.filter(function(g){return g.kode!==x.kode});
+ D[tab].splice(i,1);save();say("Data berhasil dihapus.",1)}
+render();
+</script>
+</body>
+</html>
